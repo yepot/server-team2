@@ -10,6 +10,7 @@ import com.hackathon.domain.push.service.WebPushClient.WebPushSendResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -27,7 +28,7 @@ public class PushNotificationService {
 	private final WebPushClient webPushClient;
 	private final ObjectMapper objectMapper;
 
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleNotificationCreated(NotificationCreatedEvent event) {
 		if (!pushVapidProperties.isConfigured()) {
