@@ -13,6 +13,7 @@ public enum ErrorCode {
 	CHECKLIST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 체크리스트입니다."),
 	OPENAI_API_KEY_MISSING(HttpStatus.INTERNAL_SERVER_ERROR, "OpenAI API Key가 설정되지 않았습니다."),
 	NOTIFICATION_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "AI 알림 생성에 실패했습니다."),
+	PUSH_NOT_CONFIGURED(HttpStatus.SERVICE_UNAVAILABLE, "Web Push 설정이 완료되지 않았습니다."),
 	FORBIDDEN_BOOKMARK_ACCESS(HttpStatus.FORBIDDEN, "해당 북마크를 조회할 권한이 없습니다."),
 	FORBIDDEN_BOOKMARK_UPDATE(HttpStatus.FORBIDDEN, "해당 북마크를 수정할 권한이 없습니다."),
 	FORBIDDEN_BOOKMARK_DELETE(HttpStatus.FORBIDDEN, "해당 북마크를 삭제할 권한이 없습니다."),
