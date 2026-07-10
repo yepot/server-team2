@@ -24,12 +24,12 @@ public class AuthService {
 
 	@Transactional
 	public void signUp(SignUpRequest request) {
-		if (memberRepository.existsByUsername(request.username())) {
+		if (memberRepository.existsByUsername(request.loginId())) {
 			throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
 		}
 
 		Member member = Member.builder()
-				.username(request.username())
+				.username(request.loginId())
 				.password(passwordEncoder.encode(request.password()))
 				.nickname(request.nickname())
 				.build();
@@ -38,7 +38,7 @@ public class AuthService {
 	}
 
 	public TokenResponse login(LoginRequest request) {
-		Member member = memberRepository.findByUsername(request.username())
+		Member member = memberRepository.findByUsername(request.loginId())
 				.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
 		if (!passwordEncoder.matches(request.password(), member.getPassword())) {

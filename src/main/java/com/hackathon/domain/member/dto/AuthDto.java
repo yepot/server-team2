@@ -6,13 +6,13 @@ import jakarta.validation.constraints.NotBlank;
 public class AuthDto {
 
 	public record SignUpRequest(
-			@NotBlank String id,
+			@NotBlank String loginId,
 			@NotBlank String password,
 			@NotBlank String nickname
 	) {}
 
 	public record LoginRequest(
-			@NotBlank String id,
+			@NotBlank String loginId,
 			@NotBlank String password
 	) {}
 
