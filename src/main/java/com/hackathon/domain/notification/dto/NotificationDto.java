@@ -46,4 +46,17 @@ public class NotificationDto {
 			LocalDateTime nextReminderAt,
 			LocalDateTime createdAt
 	) {}
+
+	public record NotificationStreamConnectResponse(
+			String message
+	) {}
+
+	public record RealtimeNotificationResponse(
+			Long notificationId,
+			Long bookmarkId,
+			String title,
+			String message,
+			int notificationCount,
+			LocalDateTime createdAt
+	) {}
 }

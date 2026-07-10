@@ -1,24 +1,29 @@
 package com.hackathon.global.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.Map;
+import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
 	@ExceptionHandler(CustomException.class)
-	public ResponseEntity<Map<String, String>> handleCustomException(CustomException e) {
+	public ResponseEntity<ErrorResponse> handleCustomException(CustomException e, HttpServletRequest request) {
 		return ResponseEntity
 				.status(e.getErrorCode().getStatus())
-				.body(Map.of("message", e.getMessage()));
+				.body(ErrorResponse.of(e.getErrorCode().getStatus(), e.getMessage(), request.getRequestURI()));
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<Map<String, String>> handleValidationException(MethodArgumentNotValidException e) {
+	public ResponseEntity<ErrorResponse> handleValidationException(
+			MethodArgumentNotValidException e,
+			HttpServletRequest request
+	) {
 		String message = e.getBindingResult().getFieldErrors().stream()
 				.findFirst()
 				.map(error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "잘못된 요청입니다.")
@@ -26,20 +31,45 @@ public class GlobalExceptionHandler {
 
 		return ResponseEntity
 				.badRequest()
-				.body(Map.of("message", message));
+				.body(ErrorResponse.of(HttpStatus.BAD_REQUEST, message, request.getRequestURI()));
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
-	public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException e) {
+	public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+			IllegalArgumentException e,
+			HttpServletRequest request
+	) {
 		return ResponseEntity
 				.badRequest()
-				.body(Map.of("message", e.getMessage() != null ? e.getMessage() : "잘못된 요청입니다."));
+				.body(ErrorResponse.of(
+						HttpStatus.BAD_REQUEST,
+						e.getMessage() != null ? e.getMessage() : "잘못된 요청입니다.",
+						request.getRequestURI()
+				));
 	}
 
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<Map<String, String>> handleException(Exception e) {
+	public ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request) {
 		return ResponseEntity
 				.internalServerError()
-				.body(Map.of("message", "서버 내부 오류: " + e.getMessage()));
+				.body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류: " + e.getMessage(), request.getRequestURI()));
+	}
+
+	private record ErrorResponse(
+			LocalDateTime timestamp,
+			int status,
+			String error,
+			String message,
+			String path
+	) {
+		private static ErrorResponse of(HttpStatus status, String message, String path) {
+			return new ErrorResponse(
+					LocalDateTime.now(),
+					status.value(),
+					status.getReasonPhrase(),
+					message,
+					path
+			);
+		}
 	}
 }
