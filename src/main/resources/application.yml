@@ -26,3 +26,15 @@ jwt:
   secret: ${JWT_SECRET:temporary-local-secret-key-change-this-in-real-env-32bytes!!}
   access-token-expiration: 3600000
   refresh-token-expiration: 1209600000
+
+notification:
+  ai:
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+    api-key: ${OPENAI_API_KEY}
+    model: ${OPENAI_MODEL:gpt-5-mini}
+  reminder:
+    interval-minutes: ${NOTIFICATION_REMINDER_INTERVAL_MINUTES:5}
+    instruction: ${NOTIFICATION_REMINDER_INSTRUCTION:사용자가 행동하도록 재미있고 재촉하는 알림을 작성해 주세요. 알림 횟수가 많을수록 더 단호하게 작성하되 욕설, 모욕, 혐오 표현은 사용하지 마세요.}
+  scheduler:
+    enabled: ${NOTIFICATION_SCHEDULER_ENABLED:true}
+    fixed-delay-ms: ${NOTIFICATION_SCHEDULER_FIXED_DELAY_MS:60000}

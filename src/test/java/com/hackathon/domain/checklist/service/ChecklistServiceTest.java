@@ -112,7 +112,6 @@ class ChecklistServiceTest {
 
 	private Bookmark createBookmark(Long bookmarkId, Long memberId) {
 		Member member = Member.builder()
-				.username("yepot")
 				.loginId("yepot")
 				.password("encoded-password")
 				.nickname("은서")
