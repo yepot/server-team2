@@ -12,6 +12,9 @@ spring:
         format_sql: true
         default_batch_fetch_size: 100
 
+server:
+  forward-headers-strategy: framework
+
 springdoc:
   api-docs:
     path: /v3/api-docs
