@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
@@ -21,4 +22,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 	List<Notification> findNotificationHistory(@Param("memberId") Long memberId);
 
 	long countByBookmark_Id(Long bookmarkId);
+
+	Optional<Notification> findTopByBookmark_IdOrderByCreatedAtDescIdDesc(Long bookmarkId);
 }

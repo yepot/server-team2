@@ -8,6 +8,7 @@ import com.hackathon.domain.checklist.dto.ChecklistDto.CreateRequest;
 import com.hackathon.domain.checklist.dto.ChecklistDto.UpdateRequest;
 import com.hackathon.domain.checklist.entity.Checklist;
 import com.hackathon.domain.checklist.repository.ChecklistRepository;
+import com.hackathon.domain.score.service.ScoreService;
 import com.hackathon.global.exception.CustomException;
 import com.hackathon.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class ChecklistService {
 
 	private final ChecklistRepository checklistRepository;
 	private final BookmarkRepository bookmarkRepository;
+	private final ScoreService scoreService;
 
 	@Transactional
 	public ChecklistResponse createChecklist(Long memberId, Long bookmarkId, CreateRequest request) {
@@ -47,7 +49,11 @@ public class ChecklistService {
 	@Transactional
 	public ChecklistCheckResponse toggleChecklist(Long memberId, Long bookmarkId, Long checklistId) {
 		Checklist checklist = getOwnedChecklist(checklistId, bookmarkId, memberId);
+		boolean wasChecked = checklist.isChecked();
 		checklist.toggleChecked();
+		if (!wasChecked && checklist.isChecked()) {
+			scoreService.awardChecklistChecked(checklist);
+		}
 		checklistRepository.flush();
 
 		return ChecklistCheckResponse.from(checklist);

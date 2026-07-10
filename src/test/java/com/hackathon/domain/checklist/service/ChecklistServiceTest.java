@@ -9,6 +9,7 @@ import com.hackathon.domain.checklist.dto.ChecklistDto.UpdateRequest;
 import com.hackathon.domain.checklist.entity.Checklist;
 import com.hackathon.domain.checklist.repository.ChecklistRepository;
 import com.hackathon.domain.member.entity.Member;
+import com.hackathon.domain.score.service.ScoreService;
 import com.hackathon.global.exception.CustomException;
 import com.hackathon.global.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +38,9 @@ class ChecklistServiceTest {
 
 	@Mock
 	private BookmarkRepository bookmarkRepository;
+
+	@Mock
+	private ScoreService scoreService;
 
 	@InjectMocks
 	private ChecklistService checklistService;
@@ -99,6 +104,17 @@ class ChecklistServiceTest {
 		assertThat(response.isChecked()).isTrue();
 		assertThat(response.updatedAt()).isAfter(previousUpdatedAt);
 		assertThat(checklist.isChecked()).isTrue();
+		verify(scoreService).awardChecklistChecked(checklist);
+	}
+
+	@Test
+	void toggleChecklistDoesNotAwardScoreWhenUnchecking() {
+		Checklist checklist = createChecklist(15L, 3L, 1L, true);
+		given(checklistRepository.findOwnedChecklist(15L, 3L, 1L)).willReturn(Optional.of(checklist));
+
+		checklistService.toggleChecklist(1L, 3L, 15L);
+
+		verify(scoreService, never()).awardChecklistChecked(checklist);
 	}
 
 	@Test

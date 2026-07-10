@@ -7,7 +7,6 @@ import com.hackathon.global.exception.CustomException;
 import com.hackathon.global.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -24,11 +23,9 @@ class ScoreServiceTest {
 	@Mock
 	private MemberRepository memberRepository;
 
-	@InjectMocks
-	private ScoreService scoreService;
-
 	@Test
 	void getScoreReturnsMembersTotalScore() {
+		ScoreService scoreService = new ScoreService(memberRepository, null, null, null, null);
 		Member member = Member.builder()
 				.loginId("yepot")
 				.password("encoded-password")
@@ -45,6 +42,7 @@ class ScoreServiceTest {
 
 	@Test
 	void getScoreThrowsWhenMemberDoesNotExist() {
+		ScoreService scoreService = new ScoreService(memberRepository, null, null, null, null);
 		given(memberRepository.findById(1L)).willReturn(Optional.empty());
 
 		assertThatThrownBy(() -> scoreService.getScore(1L))

@@ -38,6 +38,35 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 			@Param("repeatThreshold") LocalDateTime repeatThreshold
 	);
 
+	long countByMemberId_IdAndIsActiveTrue(Long memberId);
+
+	@Query("""
+			select count(b)
+			from Bookmark b
+			where b.memberId.id = :memberId
+				and b.isActive = true
+				and exists (
+					select 1
+					from Checklist c
+					where c.bookmark = b
+				)
+				and not exists (
+					select 1
+					from Checklist c
+					where c.bookmark = b
+						and c.checked = false
+				)
+			""")
+	long countCompletedBookmarksByMemberId(@Param("memberId") Long memberId);
+
+	@Query("""
+			select coalesce(sum(b.viewCount), 0)
+			from Bookmark b
+			where b.memberId.id = :memberId
+				and b.isActive = true
+			""")
+	Integer sumViewCountByMemberId(@Param("memberId") Long memberId);
+
 	void deleteAllByMemberId(Member member);
 
 	@Query("""

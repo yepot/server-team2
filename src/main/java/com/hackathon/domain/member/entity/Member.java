@@ -38,4 +38,8 @@ public class Member extends BaseEntity {
 		this.nickname = nickname;
 		this.totalScore = totalScore;
 	}
+
+	public void addScore(int score) {
+		this.totalScore += score;
+	}
 }
