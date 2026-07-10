@@ -11,6 +11,7 @@ import com.hackathon.domain.notification.repository.NotificationRepository;
 import com.hackathon.domain.notification.service.NotificationContentGenerator.GeneratedNotificationContent;
 import com.hackathon.domain.notification.service.NotificationContentGenerator.GenerationRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ public class NotificationProcessingService {
 	private final NotificationRepository notificationRepository;
 	private final NotificationContentGenerator notificationContentGenerator;
 	private final NotificationReminderProperties notificationReminderProperties;
+	private final ApplicationEventPublisher applicationEventPublisher;
 
 	@Transactional
 	public NotificationGenerationResponse generateDueNotifications() {
@@ -67,6 +69,15 @@ public class NotificationProcessingService {
 							.message(generatedContent.message())
 							.build()
 			);
+			applicationEventPublisher.publishEvent(new NotificationCreatedEvent(
+					bookmark.getMemberId().getId(),
+					notification.getId(),
+					bookmark.getId(),
+					notification.getTitle(),
+					notification.getMessage(),
+					notificationCount,
+					notification.getCreatedAt()
+			));
 
 			createdNotifications.add(new CreatedNotificationResponse(
 					notification.getId(),

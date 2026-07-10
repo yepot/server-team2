@@ -11,6 +11,7 @@ import com.hackathon.domain.notification.entity.Notification;
 import com.hackathon.domain.notification.repository.NotificationRepository;
 import com.hackathon.domain.notification.service.NotificationContentGenerator.GeneratedNotificationContent;
 import com.hackathon.domain.notification.service.NotificationContentGenerator.GenerationRequest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +43,9 @@ class NotificationProcessingServiceTest {
 	@Mock
 	private NotificationContentGenerator notificationContentGenerator;
 
+	@Mock
+	private ApplicationEventPublisher applicationEventPublisher;
+
 	private NotificationProcessingService notificationProcessingService;
 
 	@BeforeEach
@@ -51,7 +55,8 @@ class NotificationProcessingServiceTest {
 				checklistRepository,
 				notificationRepository,
 				notificationContentGenerator,
-				new NotificationReminderProperties(5, "재미있고 재촉하는 알림을 작성해 주세요.")
+				new NotificationReminderProperties(5, "재미있고 재촉하는 알림을 작성해 주세요."),
+				applicationEventPublisher
 		);
 	}
 
@@ -97,6 +102,13 @@ class NotificationProcessingServiceTest {
 		assertThat(requestCaptor.getValue().bookmarkTitle()).isEqualTo("@@회사 채용 공고");
 		assertThat(requestCaptor.getValue().notificationCount()).isEqualTo(1);
 		assertThat(requestCaptor.getValue().reminderLevel()).isEqualTo(1);
+
+		ArgumentCaptor<NotificationCreatedEvent> eventCaptor = ArgumentCaptor.forClass(NotificationCreatedEvent.class);
+		org.mockito.Mockito.verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
+		assertThat(eventCaptor.getValue().memberId()).isEqualTo(1L);
+		assertThat(eventCaptor.getValue().notificationId()).isEqualTo(101L);
+		assertThat(eventCaptor.getValue().bookmarkId()).isEqualTo(10L);
+		assertThat(eventCaptor.getValue().notificationCount()).isEqualTo(1);
 	}
 
 	@Test
@@ -148,6 +160,7 @@ class NotificationProcessingServiceTest {
 		assertThat(response.notifications()).isEmpty();
 		assertThat(response.message()).isEqualTo("모든 체크리스트가 완료되어 추가 알림을 생성하지 않았습니다.");
 		verifyNoInteractions(notificationContentGenerator);
+		verifyNoInteractions(applicationEventPublisher);
 	}
 
 	private Bookmark createBookmark(Long bookmarkId, Long memberId, String title) {
