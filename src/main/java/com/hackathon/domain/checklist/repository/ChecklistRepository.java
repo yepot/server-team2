@@ -39,6 +39,8 @@ public interface ChecklistRepository extends JpaRepository<Checklist, Long> {
 			""")
 	List<String> findIncompleteContentsByBookmarkId(@Param("bookmarkId") Long bookmarkId);
 
+	boolean existsByBookmark_IdAndCheckedFalse(Long bookmarkId);
+
 	@Query("select c from Checklist c where c.bookmark.id = :bookmarkId")
 	List<Checklist> findByBookmarkId(@Param("bookmarkId") Long bookmarkId);
 }
