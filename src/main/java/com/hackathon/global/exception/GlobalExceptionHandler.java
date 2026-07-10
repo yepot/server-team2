@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -55,14 +56,14 @@ public class GlobalExceptionHandler {
 				.body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류: " + e.getMessage(), request.getRequestURI()));
 	}
 
-	private record ErrorResponse(
+	public record ErrorResponse(
 			LocalDateTime timestamp,
 			int status,
 			String error,
 			String message,
 			String path
 	) {
-		private static ErrorResponse of(HttpStatus status, String message, String path) {
+		public static ErrorResponse of(HttpStatus status, String message, String path) {
 			return new ErrorResponse(
 					LocalDateTime.now(),
 					status.value(),

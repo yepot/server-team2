@@ -94,6 +94,10 @@ public class Bookmark extends BaseEntity {
     public void delete() {
         this.isActive = false;
     }
-}
 
+    public void visit() {
+        this.viewCount += 1;
+        this.visitedAt = LocalDateTime.now();
+    }
+}
 

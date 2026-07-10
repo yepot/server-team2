@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface ChecklistRepository extends JpaRepository<Checklist, Long> {
 
-	@Query("""
+    @Query("""
 			select c
 			from Checklist c
 			join fetch c.bookmark b
@@ -19,23 +19,23 @@ public interface ChecklistRepository extends JpaRepository<Checklist, Long> {
 				and b.memberId.id = :memberId
 				and b.isActive = true
 			""")
-	Optional<Checklist> findOwnedChecklist(
-			@Param("checklistId") Long checklistId,
-			@Param("bookmarkId") Long bookmarkId,
-			@Param("memberId") Long memberId
-	);
+    Optional<Checklist> findOwnedChecklist(
+            @Param("checklistId") Long checklistId,
+            @Param("bookmarkId") Long bookmarkId,
+            @Param("memberId") Long memberId
+    );
 
-	@Query("""
+    @Query("""
 			select c.content
 			from Checklist c
 			where c.bookmark.id = :bookmarkId
 				and c.checked = false
 			order by c.createdAt asc, c.id asc
 			""")
-	List<String> findIncompleteContentsByBookmarkId(@Param("bookmarkId") Long bookmarkId);
+    List<String> findIncompleteContentsByBookmarkId(@Param("bookmarkId") Long bookmarkId);
 
-	boolean existsByBookmark_IdAndCheckedFalse(Long bookmarkId);
+    boolean existsByBookmark_IdAndCheckedFalse(Long bookmarkId);
 
-	@Query("select c from Checklist c where c.bookmark.id = :bookmarkId")
-	List<Checklist> findByBookmarkId(@Param("bookmarkId") Long bookmarkId);
+    @Query("select c from Checklist c where c.bookmark.id = :bookmarkId")
+    List<Checklist> findByBookmarkId(@Param("bookmarkId") Long bookmarkId);
 }

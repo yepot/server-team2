@@ -22,6 +22,16 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 	Optional<Bookmark> findOwnedActiveBookmark(@Param("bookmarkId") Long bookmarkId, @Param("memberId") Long memberId);
 
 	@Query("""
+			select distinct b
+			from Bookmark b
+			left join fetch b.tags
+			where b.memberId.id = :memberId
+				and b.isActive = true
+			order by b.id desc
+			""")
+	List<Bookmark> findOwnedActiveBookmarks(@Param("memberId") Long memberId);
+
+	@Query("""
 			select b
 			from Bookmark b
 			where b.isActive = true
@@ -108,4 +118,13 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 	List<Object[]> countBookmarksByTagName(@Param("memberId") Long memberId);
 
 
+
+	@Query("""
+			select distinct b
+			from Bookmark b
+			left join fetch b.tags
+			where b.id = :bookmarkId
+				and b.isActive = true
+			""")
+	Optional<Bookmark> findActiveBookmarkWithTags(@Param("bookmarkId") Long bookmarkId);
 }
