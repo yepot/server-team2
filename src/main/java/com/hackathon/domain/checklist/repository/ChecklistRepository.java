@@ -38,4 +38,6 @@ public interface ChecklistRepository extends JpaRepository<Checklist, Long> {
 
     @Query("select c from Checklist c where c.bookmark.id = :bookmarkId")
     List<Checklist> findByBookmarkId(@Param("bookmarkId") Long bookmarkId);
+
+	List<Checklist> findByBookmark_IdInOrderByIdAsc(List<Long> bookmarkIds);
 }

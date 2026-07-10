@@ -87,4 +87,13 @@ public class BookmarkReadDto {
 			);
 		}
 	}
+
+	public record TagFilterResponse(
+			String tagName,
+			List<BookmarkResponse> bookmarks
+	) {
+		public static TagFilterResponse of(String tagName, List<BookmarkResponse> bookmarks) {
+			return new TagFilterResponse(tagName, bookmarks);
+		}
+	}
 }

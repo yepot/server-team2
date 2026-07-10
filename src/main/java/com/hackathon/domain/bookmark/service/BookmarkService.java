@@ -189,4 +189,23 @@ public class BookmarkService {
 			return false;
 		}
 	}
+
+	public BookmarkReadDto.TagFilterResponse findAllByTag(Long memberId, String tagName) {
+		validateAuthenticatedMember(memberId);
+
+		List<Bookmark> bookmarks = bookmarkRepository.findOwnedActiveBookmarksByTagName(memberId, tagName);
+		List<Long> bookmarkIds = bookmarks.stream()
+				.map(Bookmark::getId)
+				.toList();
+		Map<Long, List<Checklist>> checklistsByBookmarkId = bookmarkIds.isEmpty()
+				? Map.of()
+				: checklistRepository.findByBookmark_IdInOrderByIdAsc(bookmarkIds).stream()
+				.collect(Collectors.groupingBy(checklist -> checklist.getBookmark().getId()));
+
+		List<BookmarkReadDto.BookmarkResponse> responses = bookmarks.stream()
+				.map(bookmark -> BookmarkReadDto.BookmarkResponse.of(bookmark, checklistsByBookmarkId))
+				.toList();
+
+		return BookmarkReadDto.TagFilterResponse.of(tagName, responses);
+	}
 }
