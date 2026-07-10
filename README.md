@@ -1,7 +1,7 @@
 # 백엔드
 
 저장만 하고 다시 보지 않는 링크를 다시 행동으로 이어지게 만드는 북마크 리마인드 서비스의 백엔드입니다.  
-북마크, 체크리스트, AI 알림, SSE 실시간 전송, 점수/레벨 시스템을 Spring Boot 기반 API로 제공합니다.
+북마크, 체크리스트, AI 알림, SSE 실시간 전송, PWA Web Push, 점수/레벨 시스템을 Spring Boot 기반 API로 제공합니다.
 
 ## 팀원 및 역할 분담
 
@@ -9,7 +9,7 @@
 | --- | --- | --- | --- |
 | 최정인 | [ch0iii](https://github.com/ch0iii) | CI/CD, 인증, 홈 화면 | GitHub Actions 기반 빌드/검증 파이프라인 구성, JWT 로그인 및 인증 흐름 구현, 홈 화면 API와 오늘의 아카이브/태그 컬렉션 조회 기능 구현 |
 | 김서윤 | [SY0518](https://github.com/SY0518) | 북마크 도메인 | 북마크 등록/목록/상세/수정/삭제 API 구현, 태그·리마인드·조회수 연동 처리, 사용자 소유권 검증과 응답 DTO 구성 |
-| 양은서 | [yepot](https://github.com/yepot) | 체크리스트, 알림 | 체크리스트 CRUD 및 체크 토글 구현, OpenAI 기반 리마인드 알림 생성 로직 설계, 스케줄러·알림 내역 조회·SSE 실시간 전송 기능 구현 |
+| 양은서 | [yepot](https://github.com/yepot) | 체크리스트, 알림 | 체크리스트 CRUD 및 체크 토글 구현, OpenAI 기반 리마인드 알림 생성 로직 설계, 스케줄러·알림 내역 조회·PWA Web Push 연동 구현 |
 
 ## System Architecture
 <img width="893" height="493" alt="image" src="https://github.com/user-attachments/assets/7d0599ee-0fb6-4330-8ec5-bab62189e116" />
@@ -32,6 +32,7 @@
   - 체크리스트가 남아 있으면 5분 간격으로 추가 리마인드 생성
   - 북마크별 알림 내역 묶음 조회
   - SSE를 통한 실시간 알림 전송
+  - VAPID 기반 PWA Web Push 전송
 - 점수
   - 링크 저장, 태그 설정, 리마인드 설정, 체크리스트 완료 등 행동별 점수 적립
   - 누적 점수 조회
@@ -53,7 +54,7 @@
 | Security | Spring Security, JWT (`jjwt`) |
 | API Docs | SpringDoc OpenAPI, Swagger UI |
 | AI | OpenAI Chat Completions API |
-| Realtime | SSE (`SseEmitter`) |
+| Realtime | SSE (`SseEmitter`), PWA Web Push (VAPID) |
 | Test | JUnit 5, Spring Boot Test, Spring Security Test |
 
 ## 실행 방법
@@ -90,6 +91,15 @@ export NOTIFICATION_SCHEDULER_ENABLED=false
 ```bash
 export NOTIFICATION_REMINDER_INTERVAL_MINUTES=5
 export NOTIFICATION_SCHEDULER_FIXED_DELAY_MS=60000
+```
+
+PWA Web Push까지 함께 사용하려면 아래 환경변수도 추가로 설정하세요.
+
+```bash
+export VAPID_PUBLIC_KEY="your-vapid-public-key"
+export VAPID_PRIVATE_KEY="your-vapid-private-key"
+export VAPID_SUBJECT="mailto:your-email@example.com"
+export PUSH_TTL_SECONDS=300
 ```
 
 ### 3. 애플리케이션 실행
@@ -133,6 +143,9 @@ export NOTIFICATION_SCHEDULER_FIXED_DELAY_MS=60000
 | 알림 내역 조회 | `GET` | `/api/notifications` |
 | 알림 생성 | `POST` | `/api/notifications` |
 | 알림 SSE 연결 | `GET` | `/api/notifications/stream` |
+| VAPID 공개키 조회 | `GET` | `/api/push/public-key` |
+| 푸시 구독 저장 | `POST` | `/api/push/subscriptions` |
+| 푸시 구독 삭제 | `DELETE` | `/api/push/subscriptions` |
 | 점수 조회 | `GET` | `/api/score` |
 | 마이페이지 조회 | `GET` | `/api/mypage` |
 
@@ -142,6 +155,46 @@ export NOTIFICATION_SCHEDULER_FIXED_DELAY_MS=60000
 - 기본 설정상 `notification.scheduler.enabled=true`이며, 1분마다 리마인드 대상 북마크를 확인합니다.
 - 알림 생성 시점에 미완료 체크리스트가 없으면 추가 알림을 만들지 않습니다.
 - 실시간 알림은 SSE로 전송되며, 연결이 끊긴 경우 `GET /api/notifications`로 누락된 내역을 조회할 수 있습니다.
+- PWA Web Push 구독이 저장되어 있으면 같은 알림이 Web Push로도 함께 전송됩니다.
+
+## PWA Web Push 안내
+
+- 현재 프로젝트는 `SSE`와 `PWA Web Push`를 함께 지원합니다.
+- 브라우저 탭이 열려 있는 경우 SSE로 즉시 수신할 수 있고, PWA 구독이 완료된 경우 앱이나 브라우저가 닫혀 있어도 OS 푸시 알림으로 받을 수 있습니다.
+- Web Push는 브라우저의 Service Worker 등록과 `PushManager.subscribe()` 호출이 선행되어야 동작합니다.
+
+구현된 Web Push 관련 API는 아래와 같습니다.
+
+| 기능 | 메서드 | URL | 설명 |
+| --- | --- | --- | --- |
+| VAPID 공개키 조회 | `GET` | `/api/push/public-key` | 프론트가 `PushManager.subscribe()` 호출 전에 사용할 공개키 제공 |
+| 푸시 구독 저장 | `POST` | `/api/push/subscriptions` | 브라우저의 `endpoint`, `p256dh`, `auth` 값을 서버에 저장 |
+| 푸시 구독 삭제 | `DELETE` | `/api/push/subscriptions` | 로그아웃, 권한 해제, 만료 시 구독 정보 제거 |
+
+푸시 구독 저장 요청 데이터 예시는 아래와 같습니다.
+
+```json
+{
+  "endpoint": "https://fcm.googleapis.com/fcm/send/...",
+  "p256dh": "base64-encoded-public-key",
+  "auth": "base64-encoded-auth-secret"
+}
+```
+
+Web Push 실행에 필요한 환경변수:
+
+```bash
+export VAPID_PUBLIC_KEY="your-vapid-public-key"
+export VAPID_PRIVATE_KEY="your-vapid-private-key"
+export VAPID_SUBJECT="mailto:your-email@example.com"
+export PUSH_TTL_SECONDS=300
+```
+
+프론트에서 함께 준비해야 할 항목:
+
+- Service Worker 등록 및 `PushManager` 구독 처리
+- `GET /api/push/public-key`로 받은 공개키를 사용한 브라우저 구독 생성
+- 로그아웃 또는 알림 권한 해제 시 `DELETE /api/push/subscriptions` 호출
 
 ## 프로젝트 구조
 
@@ -154,6 +207,7 @@ src/main/java/com/hackathon
 │   ├── member
 │   ├── mypage
 │   ├── notification
+│   ├── push
 │   └── score
 └── global
     ├── config
