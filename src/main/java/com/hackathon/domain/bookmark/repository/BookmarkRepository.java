@@ -1,6 +1,7 @@
 package com.hackathon.domain.bookmark.repository;
 
 import com.hackathon.domain.bookmark.entity.Bookmark;
+import com.hackathon.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,4 +18,8 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 				and b.isActive = true
 			""")
 	Optional<Bookmark> findOwnedActiveBookmark(@Param("bookmarkId") Long bookmarkId, @Param("memberId") Long memberId);
+
+	void deleteAllByMemberId(Member member);
+
 }
+

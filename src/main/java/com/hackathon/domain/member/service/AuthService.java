@@ -1,5 +1,6 @@
 package com.hackathon.domain.member.service;
 
+import com.hackathon.domain.bookmark.repository.BookmarkRepository;
 import com.hackathon.domain.member.dto.AuthDto;
 import com.hackathon.domain.member.dto.AuthDto.LoginRequest;
 import com.hackathon.domain.member.dto.AuthDto.SignUpRequest;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
 	private final MemberRepository memberRepository;
+	private final BookmarkRepository bookmarkRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 
@@ -64,6 +66,7 @@ public class AuthService {
 	public void withdraw(Long memberId) {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+		bookmarkRepository.deleteAllByMemberId(member); // 먼저 연관 북마크 삭제
 		memberRepository.delete(member);
 	}
 }
