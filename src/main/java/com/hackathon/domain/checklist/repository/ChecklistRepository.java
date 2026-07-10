@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.List;
 import java.util.Optional;
 
 public interface ChecklistRepository extends JpaRepository<Checklist, Long> {
@@ -29,6 +28,8 @@ public interface ChecklistRepository extends JpaRepository<Checklist, Long> {
 
 	List<Checklist> findByBookmark_IdInOrderByIdAsc(Collection<Long> bookmarkIds);
 
+	boolean existsByBookmark_IdAndCheckedFalse(Long bookmarkId);
+
 	@Query("""
 			select c.content
 			from Checklist c
@@ -41,4 +42,3 @@ public interface ChecklistRepository extends JpaRepository<Checklist, Long> {
 	@Query("select c from Checklist c where c.bookmark.id = :bookmarkId")
 	List<Checklist> findByBookmarkId(@Param("bookmarkId") Long bookmarkId);
 }
-

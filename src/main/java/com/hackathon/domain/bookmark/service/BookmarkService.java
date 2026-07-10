@@ -2,8 +2,10 @@ package com.hackathon.domain.bookmark.service;
 
 import com.hackathon.domain.bookmark.dto.BookmarkCreateDto.Request;
 import com.hackathon.domain.bookmark.dto.BookmarkCreateDto.Response;
+import com.hackathon.domain.bookmark.dto.BookmarkDeleteDto;
 import com.hackathon.domain.bookmark.dto.BookmarkReadDto;
 import com.hackathon.domain.bookmark.dto.BookmarkUpdateDto;
+import com.hackathon.domain.bookmark.dto.BookmarkVisitDto;
 import com.hackathon.domain.bookmark.entity.Bookmark;
 import com.hackathon.domain.bookmark.repository.BookmarkRepository;
 import com.hackathon.domain.checklist.entity.Checklist;
@@ -103,6 +105,42 @@ public class BookmarkService {
 
 		bookmarkRepository.flush();
 		return BookmarkUpdateDto.Response.from(bookmark);
+	}
+
+	@Transactional
+	public BookmarkVisitDto.Response visit(Long memberId, Long bookmarkId) {
+		validateAuthenticatedMember(memberId);
+		Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
+				.orElseThrow(() -> new CustomException(ErrorCode.BOOKMARK_NOT_FOUND));
+
+		if (!bookmark.getIsActive()) {
+			throw new CustomException(ErrorCode.BOOKMARK_UNAVAILABLE);
+		}
+		if (!bookmark.getMemberId().getId().equals(memberId)) {
+			throw new CustomException(ErrorCode.FORBIDDEN_BOOKMARK_ACCESS);
+		}
+
+		bookmark.visit();
+		bookmarkRepository.flush();
+		return BookmarkVisitDto.Response.from(bookmark);
+	}
+
+	@Transactional
+	public BookmarkDeleteDto.Response delete(Long memberId, Long bookmarkId) {
+		validateAuthenticatedMember(memberId);
+		Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
+				.orElseThrow(() -> new CustomException(ErrorCode.BOOKMARK_NOT_FOUND));
+
+		if (!bookmark.getIsActive()) {
+			throw new CustomException(ErrorCode.BOOKMARK_ALREADY_DELETED);
+		}
+		if (!bookmark.getMemberId().getId().equals(memberId)) {
+			throw new CustomException(ErrorCode.FORBIDDEN_BOOKMARK_DELETE);
+		}
+
+		bookmark.delete();
+		bookmarkRepository.flush();
+		return BookmarkDeleteDto.Response.of(bookmark.getId());
 	}
 
 	private void validateAuthenticatedMember(Long memberId) {
