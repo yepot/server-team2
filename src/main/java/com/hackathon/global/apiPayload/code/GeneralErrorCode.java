@@ -25,7 +25,13 @@ public enum GeneralErrorCode implements BaseErrorCode {
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "COMMON405_1", "지원하지 않는 HTTP 메소드입니다."),
 
     // 500 Internal Server Error
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON500_1", "서버 내부 오류가 발생했습니다. 관리자에게 문의하세요.");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON500_1", "서버 내부 오류가 발생했습니다. 관리자에게 문의하세요."),
+
+    // Member
+    DUPLICATE_USERNAME(HttpStatus.CONFLICT, "MEMBER409_1", "이미 가입된 아이디입니다."),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER404_1", "존재하지 않는 회원입니다."),
+    INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "MEMBER401_1", "비밀번호가 일치하지 않습니다."),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "MEMBER401_2", "유효하지 않은 토큰입니다.");
 
     private final HttpStatus status;
     private final String code;
