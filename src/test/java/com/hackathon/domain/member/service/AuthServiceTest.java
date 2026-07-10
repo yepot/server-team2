@@ -3,6 +3,7 @@ package com.hackathon.domain.member.service;
 import com.hackathon.domain.member.dto.AuthDto.LoginRequest;
 import com.hackathon.domain.member.dto.AuthDto.SignUpRequest;
 import com.hackathon.domain.member.dto.AuthDto.TokenResponse;
+import com.hackathon.domain.bookmark.repository.BookmarkRepository;
 import com.hackathon.domain.member.entity.Member;
 import com.hackathon.domain.member.repository.MemberRepository;
 import com.hackathon.global.exception.CustomException;
@@ -34,6 +35,9 @@ class AuthServiceTest {
 	private PasswordEncoder passwordEncoder;
 
 	@Mock
+	private BookmarkRepository bookmarkRepository;
+
+	@Mock
 	private JwtTokenProvider jwtTokenProvider;
 
 	@InjectMocks
@@ -51,7 +55,6 @@ class AuthServiceTest {
 		verify(memberRepository).save(memberCaptor.capture());
 
 		Member savedMember = memberCaptor.getValue();
-		assertThat(savedMember.getUsername()).isEqualTo("yepot");
 		assertThat(savedMember.getLoginId()).isEqualTo("yepot");
 		assertThat(savedMember.getPassword()).isEqualTo("encoded-password");
 		assertThat(savedMember.getNickname()).isEqualTo("은서");
@@ -62,7 +65,6 @@ class AuthServiceTest {
 	void loginFindsMemberByLoginId() {
 		LoginRequest request = new LoginRequest("yepot", "plain-password");
 		Member member = Member.builder()
-				.username("yepot")
 				.loginId("yepot")
 				.password("encoded-password")
 				.nickname("은서")
