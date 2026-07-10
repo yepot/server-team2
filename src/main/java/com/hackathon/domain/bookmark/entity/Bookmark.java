@@ -95,3 +95,5 @@ public class Bookmark extends BaseEntity {
         this.isActive = false;
     }
 }
+
+

@@ -36,3 +36,5 @@ public class BookmarkTag extends BaseEntity {
         this.name = name;
     }
 }
+
+
