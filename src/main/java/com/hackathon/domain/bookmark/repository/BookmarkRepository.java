@@ -39,4 +39,44 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 	);
 
 	void deleteAllByMemberId(Member member);
+
+	@Query("""
+			select b
+			from Bookmark b
+			where b.memberId.id = :memberId
+				and b.isActive = true
+				and b.remindAt >= :startOfDay
+				and b.remindAt < :endOfDay
+			order by b.remindAt asc
+			""")
+	List<Bookmark> findTodayRemindBookmarks(
+			@Param("memberId") Long memberId,
+			@Param("startOfDay") LocalDateTime startOfDay,
+			@Param("endOfDay") LocalDateTime endOfDay
+	);
+
+	@Query(value = """
+			select * from bookmark b
+			where b.member_id = :memberId
+				and b.is_active = true
+				and b.id not in (:excludeIds)
+			order by random()
+			limit :limit
+			""", nativeQuery = true)
+	List<Bookmark> findRandomActiveBookmarksExcluding(
+			@Param("memberId") Long memberId,
+			@Param("excludeIds") List<Long> excludeIds,
+			@Param("limit") int limit
+	);
+
+	@Query("""
+			select t.name, count(distinct b.id)
+			from Bookmark b join b.tags t
+			where b.memberId.id = :memberId and b.isActive = true
+			group by t.name
+			order by t.name asc
+			""")
+	List<Object[]> countBookmarksByTagName(@Param("memberId") Long memberId);
+
+
 }

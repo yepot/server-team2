@@ -33,4 +33,8 @@ public interface ChecklistRepository extends JpaRepository<Checklist, Long> {
 			order by c.createdAt asc, c.id asc
 			""")
 	List<String> findIncompleteContentsByBookmarkId(@Param("bookmarkId") Long bookmarkId);
+
+	@Query("select c from Checklist c where c.bookmark.id = :bookmarkId")
+	List<Checklist> findByBookmarkId(@Param("bookmarkId") Long bookmarkId);
 }
+
