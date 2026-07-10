@@ -25,8 +25,7 @@ public class SecurityConfig {
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	private static final String[] PERMIT_ALL = {
-			"/api/auth/signup",
-			"/api/auth/login",
+			"/api/auth/**",
 			"/swagger-ui/**",
 			"/v3/api-docs/**",
 			"/swagger-ui.html"

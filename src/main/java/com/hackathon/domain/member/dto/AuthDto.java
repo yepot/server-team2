@@ -20,11 +20,4 @@ public class AuthDto {
 			String accessToken,
 			String refreshToken
 	) {}
-
-	public record MemberInfoResponse(
-			Long id,
-			String loginId,
-			String nickname,
-			int totalScore
-	) {}
 }

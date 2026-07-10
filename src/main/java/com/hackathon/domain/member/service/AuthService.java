@@ -1,13 +1,12 @@
 package com.hackathon.domain.member.service;
 
 import com.hackathon.domain.member.dto.AuthDto.LoginRequest;
-import com.hackathon.domain.member.dto.AuthDto.MemberInfoResponse;
 import com.hackathon.domain.member.dto.AuthDto.SignUpRequest;
 import com.hackathon.domain.member.dto.AuthDto.TokenResponse;
 import com.hackathon.domain.member.entity.Member;
 import com.hackathon.domain.member.repository.MemberRepository;
-import com.hackathon.global.apiPayload.code.GeneralErrorCode;
-import com.hackathon.global.apiPayload.exception.ProjectException;
+import com.hackathon.global.exception.CustomException;
+import com.hackathon.global.exception.ErrorCode;
 import com.hackathon.global.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,42 +24,30 @@ public class AuthService {
 
 	@Transactional
 	public void signUp(SignUpRequest request) {
-		if (memberRepository.existsByLoginId(request.loginId())) {
-			throw new ProjectException(GeneralErrorCode.DUPLICATE_USERNAME);
+		if (memberRepository.existsByUsername(request.loginId())) {
+			throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
 		}
 
 		Member member = Member.builder()
-				.loginId(request.loginId())
+				.username(request.loginId())
 				.password(passwordEncoder.encode(request.password()))
 				.nickname(request.nickname())
-				.totalScore(0)
 				.build();
 
 		memberRepository.save(member);
 	}
 
 	public TokenResponse login(LoginRequest request) {
-		Member member = memberRepository.findByLoginId(request.loginId())
-				.orElseThrow(() -> new ProjectException(GeneralErrorCode.MEMBER_NOT_FOUND));
+		Member member = memberRepository.findByUsername(request.loginId())
+				.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
 		if (!passwordEncoder.matches(request.password(), member.getPassword())) {
-			throw new ProjectException(GeneralErrorCode.INVALID_PASSWORD);
+			throw new CustomException(ErrorCode.INVALID_PASSWORD);
 		}
 
 		String accessToken = jwtTokenProvider.createAccessToken(member.getId());
-		return new TokenResponse(accessToken);
-	}
+		String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
 
-	public MemberInfoResponse getMyInfo(Long memberId) {
-		Member member = memberRepository.findById(memberId)
-				.orElseThrow(() -> new ProjectException(GeneralErrorCode.MEMBER_NOT_FOUND));
-		return new MemberInfoResponse(member.getId(), member.getLoginId(), member.getNickname(), member.getTotalScore());
-	}
-
-	@Transactional
-	public void withdraw(Long memberId) {
-		Member member = memberRepository.findById(memberId)
-				.orElseThrow(() -> new ProjectException(GeneralErrorCode.MEMBER_NOT_FOUND));
-		memberRepository.delete(member);
+		return new TokenResponse(accessToken, refreshToken);
 	}
 }
