@@ -3,6 +3,7 @@ package com.hackathon.domain.bookmark.service;
 import com.hackathon.domain.bookmark.dto.BookmarkCreateDto.Request;
 import com.hackathon.domain.bookmark.dto.BookmarkCreateDto.Response;
 import com.hackathon.domain.bookmark.dto.BookmarkReadDto;
+import com.hackathon.domain.bookmark.dto.BookmarkUpdateDto;
 import com.hackathon.domain.bookmark.entity.Bookmark;
 import com.hackathon.domain.bookmark.repository.BookmarkRepository;
 import com.hackathon.domain.checklist.entity.Checklist;
@@ -83,6 +84,27 @@ public class BookmarkService {
 		return BookmarkReadDto.DetailResponse.of(bookmark, checklists);
 	}
 
+	@Transactional
+	public BookmarkUpdateDto.Response update(Long memberId, Long bookmarkId, BookmarkUpdateDto.Request request) {
+		validateAuthenticatedMember(memberId);
+		validateUpdateRequest(request);
+
+		Bookmark bookmark = bookmarkRepository.findActiveBookmarkWithTags(bookmarkId)
+				.orElseThrow(() -> new CustomException(ErrorCode.BOOKMARK_NOT_FOUND));
+
+		if (!bookmark.getMemberId().getId().equals(memberId)) {
+			throw new CustomException(ErrorCode.FORBIDDEN_BOOKMARK_UPDATE);
+		}
+
+		bookmark.update(request.url(), request.title(), null, request.remindAt());
+		if (request.tags() != null) {
+			bookmark.replaceTags(request.tags());
+		}
+
+		bookmarkRepository.flush();
+		return BookmarkUpdateDto.Response.from(bookmark);
+	}
+
 	private void validateAuthenticatedMember(Long memberId) {
 		if (memberId == null) {
 			throw new CustomException(ErrorCode.INVALID_TOKEN);
@@ -97,6 +119,21 @@ public class BookmarkService {
 			throw new IllegalArgumentException("리마인드 날짜는 현재 시각 이후로 설정해야 합니다.");
 		}
 		if (!isValidUrl(request.url())) {
+			throw new IllegalArgumentException("올바른 URL 형식이 아닙니다.");
+		}
+	}
+
+	private void validateUpdateRequest(BookmarkUpdateDto.Request request) {
+		if (request.url() == null && request.title() == null && request.tags() == null && request.remindAt() == null) {
+			throw new IllegalArgumentException("수정할 북마크 정보를 하나 이상 입력해야 합니다.");
+		}
+		if (request.tags() != null && request.tags().size() > MAX_TAG_COUNT) {
+			throw new IllegalArgumentException("해시태그는 최대 5개까지 등록할 수 있습니다.");
+		}
+		if (request.remindAt() != null && !request.remindAt().isAfter(LocalDateTime.now())) {
+			throw new IllegalArgumentException("리마인드 날짜는 현재 시각 이후로 설정해야 합니다.");
+		}
+		if (request.url() != null && !isValidUrl(request.url())) {
 			throw new IllegalArgumentException("올바른 URL 형식이 아닙니다.");
 		}
 	}

@@ -48,12 +48,19 @@ public class SecurityConfig {
 									? "Access Token은 필수입니다."
 									: "유효하지 않은 Access Token입니다.";
 
-							response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+							int status = authorization == null || authorization.isBlank()
+									? HttpServletResponse.SC_BAD_REQUEST
+									: HttpServletResponse.SC_UNAUTHORIZED;
+							String error = authorization == null || authorization.isBlank()
+									? "Bad Request"
+									: "Unauthorized";
+
+							response.setStatus(status);
 							response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 							response.setCharacterEncoding("UTF-8");
 							response.getWriter().write("""
-									{"timestamp":"%s","status":400,"error":"Bad Request","message":"%s","path":"%s"}
-									""".formatted(LocalDateTime.now(), message, request.getRequestURI()));
+									{"timestamp":"%s","status":%d,"error":"%s","message":"%s","path":"%s"}
+									""".formatted(LocalDateTime.now(), status, error, message, request.getRequestURI()));
 						})
 				)
 				.authorizeHttpRequests(auth -> auth
