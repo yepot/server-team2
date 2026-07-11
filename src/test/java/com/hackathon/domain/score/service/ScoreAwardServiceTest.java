@@ -118,10 +118,52 @@ class ScoreAwardServiceTest {
 		verify(scoreHistoryRepository, never()).save(org.mockito.ArgumentMatchers.any());
 	}
 
+	@Test
+	void awardReminderRevisitAwardsOnlyWhenNotificationExists() {
+		Member member = createMember(1L, 0);
+		Bookmark bookmark = createBookmark(10L, member);
+		Notification notification = createNotification(1000L, bookmark, member, LocalDateTime.now().minusHours(1));
+
+		given(notificationRepository.findTopByBookmark_IdOrderByCreatedAtDescIdDesc(10L))
+				.willReturn(Optional.of(notification));
+		given(scoreHistoryRepository.existsByActionTypeAndBookmark_Id(ScoreActionType.REMINDER_REVISIT, 10L))
+				.willReturn(false);
+		mockBookmarkReferences(member, bookmark);
+
+		boolean awarded = scoreService.awardReminderRevisit(bookmark);
+
+		assertThat(awarded).isTrue();
+		assertThat(member.getTotalScore()).isEqualTo(10);
+
+		ArgumentCaptor<ScoreHistory> scoreHistoryCaptor = ArgumentCaptor.forClass(ScoreHistory.class);
+		verify(scoreHistoryRepository).save(scoreHistoryCaptor.capture());
+		assertThat(scoreHistoryCaptor.getValue().getActionType()).isEqualTo(ScoreActionType.REMINDER_REVISIT);
+	}
+
+	@Test
+	void awardReminderRevisitSkipsWhenNotificationDoesNotExist() {
+		Member member = createMember(1L, 0);
+		Bookmark bookmark = createBookmark(10L, member);
+
+		given(notificationRepository.findTopByBookmark_IdOrderByCreatedAtDescIdDesc(10L))
+				.willReturn(Optional.empty());
+
+		boolean awarded = scoreService.awardReminderRevisit(bookmark);
+
+		assertThat(awarded).isFalse();
+		assertThat(member.getTotalScore()).isZero();
+		verify(scoreHistoryRepository, never()).save(org.mockito.ArgumentMatchers.any());
+	}
+
 	private void mockReferences(Member member, Bookmark bookmark, Checklist checklist) {
 		given(entityManager.getReference(Member.class, 1L)).willReturn(member);
 		given(entityManager.getReference(Bookmark.class, 10L)).willReturn(bookmark);
 		given(entityManager.getReference(Checklist.class, 100L)).willReturn(checklist);
+	}
+
+	private void mockBookmarkReferences(Member member, Bookmark bookmark) {
+		given(entityManager.getReference(Member.class, 1L)).willReturn(member);
+		given(entityManager.getReference(Bookmark.class, 10L)).willReturn(bookmark);
 	}
 
 	private Member createMember(Long memberId, int totalScore) {

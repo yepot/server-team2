@@ -59,6 +59,10 @@ public class ScoreService {
 
 	@Transactional
 	public boolean awardReminderRevisit(Bookmark bookmark) {
+		if (notificationRepository.findTopByBookmark_IdOrderByCreatedAtDescIdDesc(bookmark.getId()).isEmpty()) {
+			return false;
+		}
+
 		return awardBookmarkAction(bookmark, ScoreActionType.REMINDER_REVISIT);
 	}
 

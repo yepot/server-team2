@@ -14,6 +14,7 @@ import com.hackathon.domain.checklist.repository.ChecklistRepository;
 import com.hackathon.domain.checklist.service.ChecklistService;
 import com.hackathon.domain.member.entity.Member;
 import com.hackathon.domain.member.repository.MemberRepository;
+import com.hackathon.domain.score.service.ScoreService;
 import com.hackathon.global.exception.CustomException;
 import com.hackathon.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class BookmarkService {
 	private final ChecklistRepository checklistRepository;
 	private final ChecklistService checklistService;
 	private final MemberRepository memberRepository;
+	private final ScoreService scoreService;
 
 	@Transactional
 	public Response create(Long memberId, Request request) {
@@ -60,6 +62,7 @@ public class BookmarkService {
 		}
 
 		Bookmark savedBookmark = bookmarkRepository.saveAndFlush(bookmark);
+		awardCreateScores(savedBookmark, request);
 		createInitialChecklists(memberId, savedBookmark.getId(), request.checklists());
 
 		return Response.from(savedBookmark);
@@ -127,6 +130,7 @@ public class BookmarkService {
 		}
 
 		bookmark.visit();
+		scoreService.awardReminderRevisit(bookmark);
 		bookmarkRepository.flush();
 		return BookmarkVisitDto.Response.from(bookmark);
 	}
@@ -178,6 +182,20 @@ public class BookmarkService {
 		checklistContents.forEach(content ->
 				checklistService.createChecklist(memberId, bookmarkId, new CreateRequest(content))
 		);
+	}
+
+	private void awardCreateScores(Bookmark bookmark, Request request) {
+		scoreService.awardLinkSaved(bookmark);
+
+		if (request.title() != null && !request.title().isBlank()) {
+			scoreService.awardPurposeSet(bookmark);
+		}
+		if (request.tags() != null && !request.tags().isEmpty()) {
+			scoreService.awardTagSet(bookmark);
+		}
+		if (request.remindAt() != null) {
+			scoreService.awardReminderSet(bookmark);
+		}
 	}
 
 	private void validateUpdateRequest(BookmarkUpdateDto.Request request) {

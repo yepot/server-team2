@@ -20,7 +20,7 @@ out/
 application-secret.yml
 
 ### VS Code ###
-.vscode/
+.vscode/y
 
 ### Mac ###
 .DS_Store

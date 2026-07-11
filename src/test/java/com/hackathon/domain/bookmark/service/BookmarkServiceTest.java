@@ -1,8 +1,9 @@
 package com.hackathon.domain.bookmark.service;
 
 import com.hackathon.domain.bookmark.dto.BookmarkCreateDto;
-import com.hackathon.domain.bookmark.dto.BookmarkReadDto;
 import com.hackathon.domain.bookmark.dto.BookmarkDeleteDto;
+import com.hackathon.domain.bookmark.dto.BookmarkReadDto;
+import com.hackathon.domain.bookmark.dto.BookmarkUpdateDto;
 import com.hackathon.domain.bookmark.entity.Bookmark;
 import com.hackathon.domain.bookmark.repository.BookmarkRepository;
 import com.hackathon.domain.checklist.dto.ChecklistDto.CreateRequest;
@@ -11,6 +12,7 @@ import com.hackathon.domain.checklist.repository.ChecklistRepository;
 import com.hackathon.domain.checklist.service.ChecklistService;
 import com.hackathon.domain.member.entity.Member;
 import com.hackathon.domain.member.repository.MemberRepository;
+import com.hackathon.domain.score.service.ScoreService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +46,9 @@ class BookmarkServiceTest {
 
 	@Mock
 	private MemberRepository memberRepository;
+
+	@Mock
+	private ScoreService scoreService;
 
 	@InjectMocks
 	private BookmarkService bookmarkService;
@@ -70,6 +76,10 @@ class BookmarkServiceTest {
 		);
 
 		verify(checklistService).createChecklist(eq(10L), eq(1L), eq(new CreateRequest("링크 열람하기")));
+		verify(scoreService).awardLinkSaved(any(Bookmark.class));
+		verify(scoreService).awardPurposeSet(any(Bookmark.class));
+		verify(scoreService).awardTagSet(any(Bookmark.class));
+		verify(scoreService).awardReminderSet(any(Bookmark.class));
 	}
 
 	@Test
@@ -96,6 +106,42 @@ class BookmarkServiceTest {
 
 		verify(checklistService).createChecklist(eq(10L), eq(1L), eq(new CreateRequest("게시글 읽기")));
 		verify(checklistService).createChecklist(eq(10L), eq(1L), eq(new CreateRequest("예제 코드 실행하기")));
+	}
+
+	@Test
+	void updateDoesNotAwardScores() {
+		Bookmark bookmark = createBookmark(1L, 10L, "Spring Boot 예외 처리 정리");
+		LocalDateTime remindAt = LocalDateTime.now().plusDays(1);
+		given(bookmarkRepository.findActiveBookmarkWithTags(1L)).willReturn(Optional.of(bookmark));
+
+		bookmarkService.update(
+				10L,
+				1L,
+				new BookmarkUpdateDto.Request(
+						"https://example.com/updated",
+						"수정된 제목",
+						List.of("Spring"),
+						remindAt
+				)
+		);
+
+		verify(scoreService, never()).awardLinkSaved(bookmark);
+		verify(scoreService, never()).awardPurposeSet(bookmark);
+		verify(scoreService, never()).awardTagSet(bookmark);
+		verify(scoreService, never()).awardReminderSet(bookmark);
+		verify(scoreService, never()).awardReminderRevisit(bookmark);
+		verify(bookmarkRepository).flush();
+	}
+
+	@Test
+	void visitAwardsReminderRevisitScore() {
+		Bookmark bookmark = createBookmark(1L, 10L, "Spring Boot 예외 처리 정리");
+		given(bookmarkRepository.findById(1L)).willReturn(Optional.of(bookmark));
+
+		bookmarkService.visit(10L, 1L);
+
+		verify(scoreService).awardReminderRevisit(bookmark);
+		verify(bookmarkRepository).flush();
 	}
 
 	@Test

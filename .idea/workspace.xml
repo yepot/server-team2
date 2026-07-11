@@ -5,19 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b95dc68f-1c56-4651-b003-9c4f45012c76" name="변경" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/bookmark/dto/BookmarkCreateDto$Request.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/bookmark/dto/BookmarkCreateDto$Request.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/bookmark/dto/BookmarkCreateDto$Response.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/bookmark/dto/BookmarkCreateDto$Response.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/bookmark/dto/BookmarkCreateDto$TagResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/bookmark/dto/BookmarkCreateDto$TagResponse.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/bookmark/service/BookmarkService.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/bookmark/service/BookmarkService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/checklist/repository/ChecklistRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/checklist/repository/ChecklistRepository.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/checklist/service/ChecklistService.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/hackathon/domain/checklist/service/ChecklistService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/tmp/compileJava/previous-compilation-data.bin" beforeDir="false" afterPath="$PROJECT_DIR$/build/tmp/compileJava/previous-compilation-data.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/hackathon/domain/bookmark/dto/BookmarkCreateDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hackathon/domain/bookmark/dto/BookmarkCreateDto.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/hackathon/domain/bookmark/service/BookmarkService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hackathon/domain/bookmark/service/BookmarkService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/hackathon/domain/checklist/service/ChecklistService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hackathon/domain/checklist/service/ChecklistService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hackathon/domain/score/service/ScoreService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hackathon/domain/score/service/ScoreService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application-local.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application-local.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/com/hackathon/domain/bookmark/service/BookmarkServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/hackathon/domain/bookmark/service/BookmarkServiceTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/hackathon/domain/checklist/service/ChecklistServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/hackathon/domain/checklist/service/ChecklistServiceTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/hackathon/domain/score/service/ScoreAwardServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/hackathon/domain/score/service/ScoreAwardServiceTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,16 +63,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Gradle.server-team2 [:com.hackathon.HackathonApplication.main()].executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feat/#3-bookmark&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.server-team2 [:com.hackathon.HackathonApplication.main()].executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "feat/#35-score",
+    "kotlin-language-version-configured": "true"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
