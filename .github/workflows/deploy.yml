@@ -65,5 +65,6 @@ jobs:
               --name hackathon-app \
               --network host \
               --restart unless-stopped \
+              -e OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
               --env-file /home/ubuntu/.env \
               ${{ secrets.DOCKERHUB_USERNAME }}/hackathon:latest
