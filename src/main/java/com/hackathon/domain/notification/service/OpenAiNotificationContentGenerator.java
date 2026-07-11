@@ -61,7 +61,8 @@ public class OpenAiNotificationContentGenerator implements NotificationContentGe
 	@Override
 	public GeneratedNotificationContent generate(GenerationRequest request) {
 		if (!StringUtils.hasText(properties.apiKey())) {
-			throw new CustomException(ErrorCode.OPENAI_API_KEY_MISSING);
+			log.warn("OPENAI_API_KEY is missing. Falling back to template notification content.");
+			return generateFallbackContent(request);
 		}
 
 		ChatCompletionRequest chatCompletionRequest = new ChatCompletionRequest(
@@ -104,13 +105,17 @@ public class OpenAiNotificationContentGenerator implements NotificationContentGe
 			validateGeneratedContent(generated);
 			return generated;
 		} catch (CustomException exception) {
+			if (exception.getErrorCode() == ErrorCode.NOTIFICATION_GENERATION_FAILED) {
+				log.warn("OpenAI notification generation failed. Falling back to template content.", exception);
+				return generateFallbackContent(request);
+			}
 			throw exception;
 		} catch (RestClientException exception) {
 			log.error("OpenAI API call failed while generating notification.", exception);
-			throw new CustomException(ErrorCode.NOTIFICATION_GENERATION_FAILED);
+			return generateFallbackContent(request);
 		} catch (Exception exception) {
 			log.error("Failed to parse OpenAI notification response.", exception);
-			throw new CustomException(ErrorCode.NOTIFICATION_GENERATION_FAILED);
+			return generateFallbackContent(request);
 		}
 	}
 
@@ -160,6 +165,36 @@ public class OpenAiNotificationContentGenerator implements NotificationContentGe
 		if (generated.title().length() > TITLE_MAX_LENGTH || generated.message().length() > MESSAGE_MAX_LENGTH) {
 			throw new CustomException(ErrorCode.NOTIFICATION_GENERATION_FAILED);
 		}
+	}
+
+	private GeneratedNotificationContent generateFallbackContent(GenerationRequest request) {
+		String primaryChecklist = request.incompleteChecklists().isEmpty()
+				? "저장한 북마크를 다시 확인해 보세요."
+				: request.incompleteChecklists().get(0);
+
+		String title = switch (request.reminderLevel()) {
+			case 1 -> "리마인드가 도착했어요!";
+			case 2 -> "아직 체크리스트가 남아 있어요!";
+			default -> "지금 바로 확인해 주세요!";
+		};
+
+		String message = switch (request.reminderLevel()) {
+			case 1 -> "%s 북마크를 다시 볼 시간이에요. '%s'부터 가볍게 시작해 보세요."
+					.formatted(request.bookmarkTitle(), primaryChecklist);
+			case 2 -> "%s 관련 할 일이 남아 있어요. '%s'를 먼저 완료해 보세요."
+					.formatted(request.bookmarkTitle(), primaryChecklist);
+			default -> "%s 북마크가 아직 끝나지 않았어요. 지금 '%s'를 체크해 주세요."
+					.formatted(request.bookmarkTitle(), primaryChecklist);
+		};
+
+		if (title.length() > TITLE_MAX_LENGTH) {
+			title = title.substring(0, TITLE_MAX_LENGTH);
+		}
+		if (message.length() > MESSAGE_MAX_LENGTH) {
+			message = message.substring(0, MESSAGE_MAX_LENGTH);
+		}
+
+		return new GeneratedNotificationContent(title, message);
 	}
 
 	private record ChatCompletionRequest(
